@@ -1,0 +1,42 @@
+ALERT ApplicationInstanceCountZero
+  IF sum by(group,job)(up{job="redemption"}) == 0
+  FOR 5m
+  LABELS {
+    severity = "critical",
+    team = "latam",
+  }
+  ANNOTATIONS {
+    summary = "Application Instance Count Zero",
+    description = "There are no running instances of the application, it's an outage!",
+    runbook = "https://gitlab.full360.com/full360/runbook/tree/master/engage/au/qantas/loyalty/application_instance_count_low.md",
+    repo = "https://gitlab.full360.com/qantas-loyalty/burn-engine",
+  }
+
+ALERT ApplicationInstanceCountLow
+  IF sum by(group,job)(up{job="redemption"}) <= ceil(count by(group,job)(up{job="redemption"}) / 2)
+  FOR 5m
+  LABELS {
+    severity = "warning",
+    team = "latam",
+  }
+  ANNOTATIONS {
+    summary = "Application Instance Count Low",
+    description = "Count: {{ $value }}, is lower than desired",
+    runbook = "https://gitlab.full360.com/full360/runbook/tree/master/engage/au/qantas/loyalty/application_instance_count_low.md",
+    repo = "https://gitlab.full360.com/qantas-loyalty/burn-engine",
+  }
+
+ALERT ReachingMemoryLimit
+  IF ((container_memory_usage_bytes{name=~"redemption.*"} * 100) / (container_spec_memory_limit_bytes{name=~"redemption.*"})) >= 90
+  FOR 5m
+  LABELS {
+    severity = "warning",
+    team = "latam",
+    job = "redemption",
+  }
+  ANNOTATIONS {
+    summary = "Reaching Memory Limit",
+    description = "Using: {{ $value }}% of its assigned memory, if it exceeds, it'll be restarted by Nomad",
+    runbook = "https://gitlab.full360.com/full360/runbook/tree/master/engage/au/qantas/loyalty/reaching_memory_limit.md",
+    repo = "https://gitlab.full360.com/qantas-loyalty/burn-engine",
+  }

@@ -1,0 +1,62 @@
+# global config
+global:
+  scrape_interval: 1m # default 1m
+  scrape_timeout: 10s # default 10s
+  evaluation_interval: 1m # default 1m
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: "qantas-loyalty-sydney"
+
+# Load rules once and periodically evaluate them according to the global
+# "evaluation_interval".
+rule_files:
+  - "/etc/prometheus/rules/prometheus.rules"
+  - "/etc/prometheus/rules/frequent-flyers.rules"
+  - "/etc/prometheus/rules/hub.rules"
+  - "/etc/prometheus/rules/redemption.rules"
+  - "/etc/prometheus/rules/transactions.rules"
+
+scrape_configs:
+  # dummy job name for all services without a job name
+  - job_name: "qantas-loyalty"
+
+    consul_sd_configs:
+      - server: "consul.service.qantas-loyalty-sydney.soa.ebi:8500"
+        services:
+          - "prometheus"
+          - "pushgateway"
+          - "cadvisor"
+          - "frequent-flyers"
+          - "corporate-schemes"
+          - "cash-card"
+          - "transactions"
+          - "transactions-exporter"
+          - "transactions-consumer"
+          - "hub"
+          - "currencies"
+          - "ogs-api"
+          - "redemption"
+
+    relabel_configs:
+      - source_labels: ["__meta_consul_service"]
+        regex:         "(.*)"
+        target_label:  "job"
+        replacement:   "${1}"
+      - source_labels: ["__meta_consul_service_address"]
+        regex:         "(.*)"
+        target_label:  "address"
+        replacement:   "${1}"
+      - source_labels: ["__meta_consul_service_port"]
+        regex:         "(.*)"
+        target_label:  "port"
+        replacement:   "${1}"
+      - source_labels: ["__meta_consul_tags"]
+        regex:         ".*,(prod|staging|dev),.*"
+        target_label:  "group"
+        replacement:   "${1}"
+      - source_labels: ["__meta_consul_node"]
+        regex:         "(.*)"
+        target_label:  "instance"
+        replacement:   "${1}"
