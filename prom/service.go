@@ -11,7 +11,7 @@ type Service interface {
 }
 
 type service struct {
-	storage    storage.S3Storage
+	storage    storage.Storage
 	httpClient *http.Client
 	config     struct {
 		url    string
@@ -19,7 +19,7 @@ type service struct {
 	}
 }
 
-func NewService(storage storage.S3Storage, client *http.Client, url, method string) *service {
+func NewService(storage storage.Storage, client *http.Client, url, method string) *service {
 	return &service{
 		storage:    storage,
 		httpClient: client,

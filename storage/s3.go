@@ -11,10 +11,6 @@ import (
 	"github.com/go-kit/kit/log"
 )
 
-type S3Storage interface {
-	Download() error
-}
-
 type s3Storage struct {
 	svc     *s3.S3
 	manager *s3manager.Downloader
@@ -43,7 +39,7 @@ func NewS3Storage(s3 *s3.S3, manager *s3manager.Downloader, logger log.Logger, b
 	}
 }
 
-func (s s3Storage) Download() error {
+func (s *s3Storage) Download() error {
 	err := s.svc.ListObjectsPages(&s3.ListObjectsInput{
 		Bucket: &s.config.bucket,
 	}, func(page *s3.ListObjectsOutput, last bool) bool {

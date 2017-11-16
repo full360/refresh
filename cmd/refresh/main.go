@@ -41,10 +41,11 @@ func main() {
 	}))
 
 	// storage setup
-	storage := storage.NewS3Storage(
+	var ss storage.Storage
+	ss = storage.NewS3Storage(
 		s3.New(sess),
 		s3manager.NewDownloader(sess),
-		log.With(logger, "storage", "s3"),
+		log.With(logger, "component", "storage"),
 		*s3Bucket,
 		*s3BucketPrefix,
 		*downloadDir,
@@ -53,12 +54,12 @@ func main() {
 	// prometheus service setup
 	var ps prom.Service
 	ps = prom.NewService(
-		storage,
+		ss,
 		httpClient,
 		*promUrl,
 		"POST",
 	)
-	ps = prom.NewLoggingService(log.With(logger, "service", "prom"), ps)
+	ps = prom.NewLoggingService(log.With(logger, "component", "prom"), ps)
 
 	r := mux.NewRouter()
 	r.Handle(
