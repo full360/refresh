@@ -14,6 +14,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"gitlab.full360.com/full360/refresh/health"
 	"gitlab.full360.com/full360/refresh/prom"
 	"gitlab.full360.com/full360/refresh/storage"
 )
@@ -40,7 +41,11 @@ func main() {
 		Region: aws.String(*awsRegion),
 	}))
 
-	// storage setup
+	// health service setup
+	var hs health.Service
+	hs = health.NewService()
+
+	// storage service setup
 	var ss storage.Storage
 	ss = storage.NewS3Storage(
 		s3.New(sess),
@@ -62,6 +67,10 @@ func main() {
 	ps = prom.NewLoggingService(log.With(logger, "component", "prom"), ps)
 
 	r := mux.NewRouter()
+	r.Handle(
+		"/health",
+		health.HealthHandler(hs),
+	).Methods("GET")
 	r.Handle(
 		"/prom/refresh",
 		prom.RefreshHandler(ps),
