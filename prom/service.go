@@ -3,7 +3,6 @@ package prom
 import (
 	"net/http"
 
-	"github.com/go-kit/kit/log"
 	"gitlab.full360.com/full360/refresh/storage"
 )
 
@@ -13,7 +12,6 @@ type Service interface {
 
 type service struct {
 	storage    storage.S3Storage
-	logger     log.Logger
 	httpClient *http.Client
 	config     struct {
 		url    string
@@ -21,10 +19,9 @@ type service struct {
 	}
 }
 
-func NewService(storage storage.S3Storage, logger log.Logger, client *http.Client, url, method string) *service {
+func NewService(storage storage.S3Storage, client *http.Client, url, method string) *service {
 	return &service{
 		storage:    storage,
-		logger:     logger,
 		httpClient: client,
 		config: struct {
 			url    string

@@ -54,7 +54,6 @@ func main() {
 	var ps prom.Service
 	ps = prom.NewService(
 		storage,
-		log.With(logger, "service", "prom"),
 		httpClient,
 		*promUrl,
 		"POST",
