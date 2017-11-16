@@ -7,11 +7,11 @@ import (
 	"gitlab.full360.com/full360/refresh/storage"
 )
 
-type PromService interface {
+type Service interface {
 	Refresh() (*http.Response, error)
 }
 
-type promService struct {
+type service struct {
 	storage    storage.S3Storage
 	logger     log.Logger
 	httpClient *http.Client
@@ -21,8 +21,8 @@ type promService struct {
 	}
 }
 
-func NewPromService(storage storage.S3Storage, logger log.Logger, client *http.Client, url, method string) *promService {
-	return &promService{
+func NewService(storage storage.S3Storage, logger log.Logger, client *http.Client, url, method string) *service {
+	return &service{
 		storage:    storage,
 		logger:     logger,
 		httpClient: client,
@@ -36,7 +36,7 @@ func NewPromService(storage storage.S3Storage, logger log.Logger, client *http.C
 	}
 }
 
-func (p *promService) call() (*http.Response, error) {
+func (p *service) call() (*http.Response, error) {
 	r, err := http.NewRequest(p.config.method, p.config.url, nil)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (p *promService) call() (*http.Response, error) {
 	return p.httpClient.Do(r)
 }
 
-func (p *promService) Refresh() (*http.Response, error) {
+func (p *service) Refresh() (*http.Response, error) {
 	if err := p.storage.Download(); err != nil {
 		return nil, err
 	}

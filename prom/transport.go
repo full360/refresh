@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func RefreshHandler(svc PromService) http.Handler {
+func RefreshHandler(svc Service) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 

@@ -50,13 +50,16 @@ func main() {
 		*downloadDir,
 	)
 
-	ps := prom.NewPromService(
+	// prometheus service setup
+	var ps prom.Service
+	ps = prom.NewService(
 		storage,
 		log.With(logger, "service", "prom"),
 		httpClient,
 		*promUrl,
 		"POST",
 	)
+	ps = prom.NewLoggingService(log.With(logger, "service", "prom"), ps)
 
 	r := mux.NewRouter()
 	r.Handle(
