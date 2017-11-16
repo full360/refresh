@@ -13,12 +13,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
-	"gitlab.full360.com/full360/refresh"
+	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"gitlab.full360.com/full360/refresh/prom"
+	"gitlab.full360.com/full360/refresh/storage"
 )
 
 func main() {
 	addr := flag.String("address", "127.0.0.1", "Listen address")
 	port := flag.Int("port", 3000, "Listen port")
+	promUrl := flag.String("prom-url", "", "Prometheus URL")
 	s3Bucket := flag.String("s3-bucket", "", "Name of the AWS S3 Bucket")
 	s3BucketPrefix := flag.String("s3-bucket-prefix", "", "Name of the AWS S3 Bucket Prefix")
 	awsRegion := flag.String("aws-region", "us-east-1", "AWS Region")
@@ -29,28 +32,36 @@ func main() {
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC, "caller", log.DefaultCaller)
 
+	// http client setup
+	httpClient := cleanhttp.DefaultClient()
+
 	// aws session setup
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region: aws.String(*awsRegion),
 	}))
 
-	s3svc := refresh.NewS3Service(
+	// storage setup
+	storage := storage.NewS3Storage(
 		s3.New(sess),
 		s3manager.NewDownloader(sess),
-		log.With(logger, "service", "s3Service"),
+		log.With(logger, "storage", "s3"),
 		*s3Bucket,
 		*s3BucketPrefix,
 		*downloadDir,
 	)
 
+	ps := prom.NewPromService(
+		storage,
+		log.With(logger, "service", "prom"),
+		httpClient,
+		*promUrl,
+		"POST",
+	)
+
 	r := mux.NewRouter()
 	r.Handle(
-		"/health",
-		refresh.HealthHandler(),
-	).Methods("GET")
-	r.Handle(
-		"/refresh",
-		refresh.DownloadHandler(s3svc),
+		"/prom/refresh",
+		prom.RefreshHandler(ps),
 	).Methods("POST")
 
 	srv := http.Server{
