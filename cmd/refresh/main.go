@@ -12,8 +12,11 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/go-kit/kit/log"
+	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gorilla/mux"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	stdprometheus "github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.full360.com/full360/refresh"
 	"gitlab.full360.com/full360/refresh/health"
 	"gitlab.full360.com/full360/refresh/prom"
@@ -68,17 +71,35 @@ func main() {
 	ps = prom.NewLoggingService(log.With(logger, "component", "prom"), ps)
 
 	// middleware setup
-	m := refresh.NewLoggingMiddleware(log.With(logger, "component", "server"))
+	lm := refresh.NewLoggingMiddleware(log.With(logger, "component", "server"))
+	li := refresh.NewInstrumentingMiddleware(
+		kitprometheus.NewCounterFrom(stdprometheus.CounterOpts{
+			Namespace: "http",
+			Subsystem: "server",
+			Name:      "requests_total",
+			Help:      "Number of requests received",
+		}, []string{"path", "method", "code"}),
+		kitprometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
+			Namespace: "http",
+			Subsystem: "server",
+			Name:      "request_duration_seconds",
+			Help:      "Total duration of requests in seconds",
+		}, []string{"path", "method"}),
+	)
 
 	r := mux.NewRouter()
 	r.Handle(
 		"/health",
-		m.LoggingHandler(health.HealthHandler(hs)),
+		li.InstrumentingHandler(lm.LoggingHandler(health.HealthHandler(hs))),
 	).Methods("GET")
 	r.Handle(
 		"/prom/refresh",
 		prom.RefreshHandler(ps),
 	).Methods("POST")
+	r.Handle(
+		"/metrics",
+		promhttp.Handler(),
+	).Methods("GET")
 
 	srv := http.Server{
 		Handler:      r,
