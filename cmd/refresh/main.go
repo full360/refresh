@@ -14,6 +14,7 @@ import (
 	"github.com/go-kit/kit/log"
 	"github.com/gorilla/mux"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"gitlab.full360.com/full360/refresh"
 	"gitlab.full360.com/full360/refresh/health"
 	"gitlab.full360.com/full360/refresh/prom"
 	"gitlab.full360.com/full360/refresh/storage"
@@ -66,10 +67,13 @@ func main() {
 	)
 	ps = prom.NewLoggingService(log.With(logger, "component", "prom"), ps)
 
+	// middleware setup
+	m := refresh.NewLoggingMiddleware(log.With(logger, "component", "server"))
+
 	r := mux.NewRouter()
 	r.Handle(
 		"/health",
-		health.HealthHandler(hs),
+		m.LoggingHandler(health.HealthHandler(hs)),
 	).Methods("GET")
 	r.Handle(
 		"/prom/refresh",
