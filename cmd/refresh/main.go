@@ -18,8 +18,8 @@ import (
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"gitlab.full360.com/full360/refresh"
+	"gitlab.full360.com/full360/refresh/app"
 	"gitlab.full360.com/full360/refresh/health"
-	"gitlab.full360.com/full360/refresh/prom"
 	"gitlab.full360.com/full360/refresh/storage"
 )
 
@@ -67,15 +67,15 @@ func main() {
 		*downloadDir,
 	)
 
-	// prometheus service setup
-	var ps prom.Service
-	ps = prom.NewService(
+	// app service setup
+	var as app.Service
+	as = app.NewService(
 		ss,
 		httpClient,
 		*appUrl,
 		*appUrlMethod,
 	)
-	ps = prom.NewLoggingService(log.With(logger, "component", "prom"), ps)
+	as = app.NewLoggingService(log.With(logger, "component", "app"), as)
 
 	// middleware setup
 	lm := refresh.NewLoggingMiddleware(log.With(logger, "component", "server"))
@@ -101,7 +101,7 @@ func main() {
 	).Methods("GET")
 	r.Handle(
 		"/app/refresh",
-		li.InstrumentingHandler(lm.LoggingHandler(prom.RefreshHandler(ps))),
+		li.InstrumentingHandler(lm.LoggingHandler(app.RefreshHandler(as))),
 	).Methods("POST")
 	r.Handle(
 		"/metrics",
