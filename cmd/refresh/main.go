@@ -26,7 +26,8 @@ import (
 func main() {
 	addr := flag.String("address", "127.0.0.1", "Listen address")
 	port := flag.Int("port", 3000, "Listen port")
-	promUrl := flag.String("prom-url", "", "Prometheus URL")
+	appUrl := flag.String("app-url", "", "Application URL")
+	appUrlMethod := flag.String("app-url-method", "POST", "Application URL Method")
 	s3Bucket := flag.String("s3-bucket", "", "Name of the AWS S3 Bucket")
 	s3BucketPrefix := flag.String("s3-bucket-prefix", "", "Name of the AWS S3 Bucket Prefix")
 	awsRegion := flag.String("aws-region", "us-east-1", "AWS Region")
@@ -71,8 +72,8 @@ func main() {
 	ps = prom.NewService(
 		ss,
 		httpClient,
-		*promUrl,
-		"POST",
+		*appUrl,
+		*appUrlMethod,
 	)
 	ps = prom.NewLoggingService(log.With(logger, "component", "prom"), ps)
 
@@ -99,7 +100,7 @@ func main() {
 		li.InstrumentingHandler(health.HealthHandler(hs)),
 	).Methods("GET")
 	r.Handle(
-		"/prom/refresh",
+		"/app/refresh",
 		li.InstrumentingHandler(lm.LoggingHandler(prom.RefreshHandler(ps))),
 	).Methods("POST")
 	r.Handle(
