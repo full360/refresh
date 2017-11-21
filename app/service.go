@@ -3,7 +3,7 @@ package app
 import (
 	"net/http"
 
-	"gitlab.full360.com/full360/refresh/storage"
+	"github.com/full360/refresh/storage"
 )
 
 type Service interface {

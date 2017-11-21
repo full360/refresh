@@ -11,16 +11,16 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/full360/refresh"
+	"github.com/full360/refresh/app"
+	"github.com/full360/refresh/health"
+	"github.com/full360/refresh/storage"
 	"github.com/go-kit/kit/log"
 	kitprometheus "github.com/go-kit/kit/metrics/prometheus"
 	"github.com/gorilla/mux"
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
 	stdprometheus "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.full360.com/full360/refresh"
-	"gitlab.full360.com/full360/refresh/app"
-	"gitlab.full360.com/full360/refresh/health"
-	"gitlab.full360.com/full360/refresh/storage"
 )
 
 func main() {
