@@ -42,5 +42,6 @@ func (i *instrumentingMiddleware) InstrumentingHandler(next http.Handler) http.H
 			i.requestCount.With("path", r.URL.Path, "method", r.Method).Add(1)
 			i.requestLatency.With("path", r.URL.Path, "method", r.Method).Observe(time.Since(begin).Seconds())
 		}(time.Now())
+		next.ServeHTTP(w, r)
 	})
 }

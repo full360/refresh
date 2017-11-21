@@ -20,7 +20,7 @@ func (l *loggingService) Refresh() (client *http.Response, err error) {
 	defer func(begin time.Time) {
 		l.logger.Log(
 			"method", "refresh",
-			"took", time.Since(begin),
+			"took", time.Since(begin).Seconds(),
 			"err", err,
 		)
 	}(time.Now())

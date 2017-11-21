@@ -78,7 +78,7 @@ func main() {
 			Subsystem: "server",
 			Name:      "requests_total",
 			Help:      "Number of requests received",
-		}, []string{"path", "method", "code"}),
+		}, []string{"path", "method"}),
 		kitprometheus.NewHistogramFrom(stdprometheus.HistogramOpts{
 			Namespace: "http",
 			Subsystem: "server",
@@ -90,11 +90,11 @@ func main() {
 	r := mux.NewRouter()
 	r.Handle(
 		"/health",
-		li.InstrumentingHandler(lm.LoggingHandler(health.HealthHandler(hs))),
+		li.InstrumentingHandler(health.HealthHandler(hs)),
 	).Methods("GET")
 	r.Handle(
 		"/prom/refresh",
-		prom.RefreshHandler(ps),
+		li.InstrumentingHandler(lm.LoggingHandler(prom.RefreshHandler(ps))),
 	).Methods("POST")
 	r.Handle(
 		"/metrics",
