@@ -5,8 +5,8 @@ Simple application to reload the configuration of an application through the
 
 This application will download the updated configuration files from a storage
 (s3) into an specified directory and then do an HTTP request to the `app-url`
-using the provided method. This application is meant to be used as a side-cart
-to the Prometheus Server.
+using the provided method. This application is meant to be used as a side-car to
+the Prometheus Server.
 
 ## Running
 
