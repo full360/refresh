@@ -32,6 +32,12 @@ func main() {
 	awsRegion := flag.String("aws-region", "us-east-1", "AWS Region")
 	downloadDir := flag.String("download-dir", "", "Download directory")
 
+	flag.Usage = func() {
+		flag.PrintDefaults()
+	}
+
+	flag.Parse()
+
 	// log setup
 	var logger log.Logger
 	logger = log.NewLogfmtLogger(os.Stderr)
