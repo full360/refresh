@@ -110,7 +110,7 @@ func main() {
 
 	srv := http.Server{
 		Handler:      r,
-		Addr:         fmt.Sprintf("%s:%d", *addr, 3000),
+		Addr:         fmt.Sprintf("%s:%d", *addr, *port),
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
